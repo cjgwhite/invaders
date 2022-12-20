@@ -4,6 +4,7 @@ class Ship extends EventTarget {
     #leftBounds = 480;
     #rightBounds = 0;
     #fireLatch = true;
+    #moveLatch = true;
     #shape = [
         {x: 5, y: 5},
         {x: 15, y: 5},
@@ -31,15 +32,21 @@ class Ship extends EventTarget {
         context.fill();
     };
     move() {
-        if (this.#controls.left) this.#x = Math.max(this.#x - 2, this.#rightBounds);
-        if (this.#controls.right) this.#x = Math.min(this.#x + 2, this.#leftBounds);
-        if (this.#controls.fire && this.#fireLatch) this.#fire();
+        if (this.#controls.fire) {
+            if (this.#fireLatch) this.#fire();
+        } else {
+            this.#fireLatch = true;
+            if (this.#moveLatch) {
+                if (this.#controls.left) this.#x = Math.max(this.#x - 2, this.#rightBounds);
+                if (this.#controls.right) this.#x = Math.min(this.#x + 2, this.#leftBounds);
+            }
+        }
     };
     #fire() {
         this.dispatchEvent(new CustomEvent('fire', {detail: {x: this.#x, y: this.#y}}));
-        
         this.#fireLatch = false;
-        setTimeout(() => this.#fireLatch = true, 500);
+        this.#moveLatch = false;
+        setTimeout(() => this.#moveLatch = true, 250);
     };
 }
 

@@ -9,7 +9,7 @@ class Alien extends EventTarget {
     #speed;
     #countDown;
     #bombLatch;
-    constructor(x,y, speed = 30) {
+    constructor(x,y, speed = 10) {
         super();
         this.#x = x;
         this.#y = y;
@@ -29,7 +29,7 @@ class Alien extends EventTarget {
     }
 
     #resetBombLatch() {
-        this.#bombLatch = Math.floor(Math.random() * (100 - this.#speed) );
+        this.#bombLatch = Math.floor(Math.random() * ((100 - this.#speed)/4));
     }
 
     #getRealX() {
@@ -59,7 +59,7 @@ class Alien extends EventTarget {
             if (this.#tick % 3 == 0) {
                 this.#y ++;
                 this.#direction = this.#direction * -1;
-                if (this.#y > 11) this.#y = 0;
+                this.#speed = this.#speed + Math.floor(this.#speed/10);
             } else {
                 this.#x += this.#direction;
             }

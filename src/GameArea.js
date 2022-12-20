@@ -36,12 +36,13 @@ class GameArea {
     init() {
         this.#controls = new Controls();
         this.#ship = new Ship(this.#controls);
-        this.#primeAliens(30);
+        this.#primeAliens();
 
         this.#ship.addEventListener('fire', (event) => this.#fireMissile(event.detail));
     };
 
-    #primeAliens(speed) {
+    #primeAliens() {
+        const speed  = 10 + (this.#level * 3);
         for (let count = 0; count < 40; count++) {
             const row = Math.floor(count/10);
             const pos = ((count/10) - Math.floor(count/10)) *10;
@@ -121,7 +122,7 @@ class GameArea {
                 this.#score += this.#level;
                 return false;
             }
-            gameOver = gameOver || this.#collide(alien, this.#ship);
+            gameOver = gameOver || alien.getLocation().bottom > 460 || this.#collide(alien, this.#ship);
             alien.move();
             return true;
         });
@@ -149,7 +150,9 @@ class GameArea {
         } else {
             if (this.#aliens.length === 0) {
                 this.#level++;
-                this.#primeAliens(20 + (this.#level * 5));
+                this.#missiles = [];
+                this.#bombs = [];
+                this.#primeAliens();
             }
             window.requestAnimationFrame(() => this.#gameTick());
         }
