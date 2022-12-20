@@ -1,0 +1,21 @@
+{
+  "name": "invaders",
+  "version": "1.0.0",
+  "description": "",
+  "main": "invaders.js",
+  "scripts": {
+    "build": "webpack",
+    "build-dev": "webpack --mode=development",
+    "start": "webpack serve --open",
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^29.3.1",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1",
+    "webpack-dev-server": "^4.11.1"
+  }
+}
