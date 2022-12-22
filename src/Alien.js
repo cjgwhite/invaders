@@ -7,7 +7,6 @@ class Alien extends EventTarget {
     #direction = 1;
     #tick = 0;
     #speed;
-    #countDown;
     #bombLatch;
     constructor(x,y, speed = 10) {
         super();
@@ -16,17 +15,13 @@ class Alien extends EventTarget {
         this.#shape = new Image();
         this.#shape.src = `alien${y}.jpg`;
         this.#speed = speed;
-        this.#resetCountdown();
+    
         this.#resetBombLatch();
     };
 
     getLocation() {
         return { left: this.#getRealX(), top: this.#getRealY(), right: this.#getRealX() + this.#width, bottom: this.#getRealY() + this.#height };
     };
-
-    #resetCountdown() {
-        this.#countDown = 100 - this.#speed;
-    }
 
     #resetBombLatch() {
         this.#bombLatch = Math.floor(Math.random() * ((100 - this.#speed)/4));
@@ -52,28 +47,22 @@ class Alien extends EventTarget {
     };
 
     move() {
-        this.#countDown--;
-        
-        if (this.#countDown < 0) {
-            this.#tick ++;
-            if (this.#tick % 3 == 0) {
-                this.#y ++;
-                this.#direction = this.#direction * -1;
-                this.#speed = this.#speed + Math.floor(this.#speed/10);
-            } else {
-                this.#x += this.#direction;
-            }
-            this.#resetCountdown();
+        this.#tick ++;
+        if (this.#tick % 3 == 0) {
+            this.#y ++;
+            this.#direction = this.#direction * -1;
+            this.#speed = this.#speed + Math.floor(this.#speed/10);
+        } else {
+            this.#x += this.#direction;
+        }
 
-            this.#bombLatch--;
-            if (this.#bombLatch < 0) {
-                this.#resetBombLatch();
-                this.dispatchEvent(new CustomEvent('bomb', {detail: {
-                    x: this.#getRealX() + this.#width/2,
-                    y: this.#getRealY() + this.#height,
-                    speed: this.#speed / 10
-                }}));
-            }
+        this.#bombLatch--;
+        if (this.#bombLatch < 0) {
+            this.#resetBombLatch();
+            this.dispatchEvent(new CustomEvent('bomb', {detail: {
+                x: this.#getRealX() + this.#width/2,
+                y: this.#getRealY() + this.#height
+            }}));
         }
     }
 

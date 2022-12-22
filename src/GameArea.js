@@ -14,11 +14,20 @@ class GameArea {
     #missiles = [];
     #controls;
 
+    #speed;
+    #alienMoveLatch;
+
     #context;
     #canvas;
 
     #level = 1;
     #score = 0;
+    #sounds = {
+        shoot: () => (new Audio('shoot.mp3')).play(),
+        alien: () => (new Audio('alien.wav')).play(),
+        kill: () => (new Audio('killed.mp3')).play(),
+        dead: () => (new Audio('dead.mp3')).play()
+    }
 
     constructor(canvas) {
         this.#canvas = canvas;
@@ -30,7 +39,6 @@ class GameArea {
         this.#canvas.height = this.#height * scaleFactor;
         
         this.#context.scale(scaleFactor, scaleFactor);
-        
     };
 
     init() {
@@ -41,24 +49,31 @@ class GameArea {
         this.#ship.addEventListener('fire', (event) => this.#fireMissile(event.detail));
     };
 
+    #resetAlienMoveLatch() {
+        this.#speed += Math.floor(this.#speed / 20);
+        this.#alienMoveLatch = 100 - this.#speed;
+    };
+
     #primeAliens() {
-        const speed  = 10 + (this.#level * 3);
+        this.#speed  = 10 + (this.#level * 3);
         for (let count = 0; count < 40; count++) {
             const row = Math.floor(count/10);
             const pos = ((count/10) - Math.floor(count/10)) *10;
-            const alien = new Alien(pos, row, speed)
+            const alien = new Alien(pos, row, this.#speed);
             alien.addEventListener('bomb', (event) => this.#dropBomb(event.detail));
             this.#aliens.push(alien);  
         }
+        this.#resetAlienMoveLatch();
     };
 
 
     #fireMissile({ x, y}) {
         this.#missiles.push(new Missile(x, y));
+        this.#sounds.shoot();
     };
 
-    #dropBomb({ x, y, speed}) {
-        this.#bombs.push(new Bomb( x, y, speed));
+    #dropBomb({ x, y }) {
+        this.#bombs.push(new Bomb( x, y, this.#speed /10));
     };
 
     #gameOverDisplay() {
@@ -113,6 +128,7 @@ class GameArea {
         let gameOver = false;
 
         this.#drawBackground();
+        this.#alienMoveLatch--;
 
         this.#ship.move();
         this.#aliens = this.#aliens.filter(alien => {
@@ -120,12 +136,20 @@ class GameArea {
             if (hit >=0 ) {
                 this.#missiles.splice(hit, 1);
                 this.#score += this.#level;
+                this.#sounds.kill();
                 return false;
             }
             gameOver = gameOver || alien.getLocation().bottom > 460 || this.#collide(alien, this.#ship);
-            alien.move();
+
+            if (this.#alienMoveLatch < 0) alien.move();
+            
             return true;
         });
+        if (this.#alienMoveLatch < 0) {
+            this.#sounds.alien();
+            this.#resetAlienMoveLatch();
+        }
+
         this.#bombs = this.#bombs.filter(bomb => {
             gameOver = gameOver || this.#collide(bomb, this.#ship);
             bomb.move();
@@ -146,6 +170,7 @@ class GameArea {
         this.#drawDisplay();
 
         if (gameOver) {
+            this.#sounds.dead();
             window.requestAnimationFrame(() => this.#gameOverDisplay());
         } else {
             if (this.#aliens.length === 0) {
